@@ -1,0 +1,158 @@
+# Magnum
+======MAGNUM===========
+CLI
+=================================================
+
+ssh-keygen
+openstack keypair create --public-key ~/.ssh/id_rsa.pub key
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep 'coreos'|awk '{print $2}') --network-driver flannel --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled  --labels kube_tag=v1.22.15-rancher1 --external-network public k8s-v1.22
+openstack coe cluster create --cluster-template  k8s-v1.22 --timeout 480 --master-count 1 --node-count 1 --keypair key test-rbac
+
+#sudo systemctl restart devstack@magnum-api devstack@magnum-cond
+
+
+
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.23.13|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.23.13 --external-network public --master-lb-enabled --keypair key k8s-v1.23.13
+
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.25.3|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.25.3 --external-network public --master-lb-enabled --keypair key k8s-v1.25.3
+
+openstack coe cluster list
+openstack coe cluster show 2726af3d-0dfb-4d20-8a88-10b58b8cbb4d
+
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep 'coreos'|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled  --labels kube_tag=v1.25.2-rancher1 --external-network public k8s-v1.25-tls
+openstack coe cluster create --cluster-template  k8s-v1.25-tls --timeout 120 --master-count 1 --node-count 1 --keypair key test-rbac
+
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep fedora-coreos-35.20220116.3.0-openstack.x86_64|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.23.13 --external-network public --master-lb-disabled k8s-v1.23.13
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep fedora-coreos-35.20220116.3.0-openstack.x86_64|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.23.13 --external-network public k8s-v1.23.13
+
+openstack coe cluster create --cluster-template  k8s-v1.23.13 --master-count 1 --node-count 1 --keypair key test
+
+=================================================
+
+
+magnum cluster api
+=================
+devstack@magnum
+====
+source /opt/stack/openrc
+ssh-keygen
+openstack keypair create --public-key ~/.ssh/id_rsa.pub key 
+
+pushd /tmp
+for version in v1.23.13 v1.24.7 v1.25.3; do \
+   curl -LO https://object-storage.public.mtl1.vexxhost.net/swift/v1/a91f106f55e64246babde7402c21b87a/magnum-capi/ubuntu-2204-kube-${version}.qcow2; \
+   openstack image create ubuntu-2204-kube-${version} --disk-format=qcow2 --container-format=bare --property os_distro=ubuntu --file=ubuntu-2204-kube-${version}.qcow2; \
+   openstack coe cluster template create \
+      --image $(openstack image show ubuntu-2204-kube-${version} -c id -f value) \
+      --external-network public \
+      --dns-nameserver 8.8.8.8 \
+      --master-lb-enabled \
+      --master-flavor m1.medium \
+      --flavor m1.medium \
+      --network-driver calico \
+      --docker-storage-driver overlay2 \
+      --coe kubernetes \
+      --label kube_tag=${version} \
+      k8s-${version};
+done;
+popd
+
+pushd /tmp
+for version in v1.23.13 v1.24.7 v1.25.3; do \
+   curl -LO https://object-storage.public.mtl1.vexxhost.net/swift/v1/a91f106f55e64246babde7402c21b87a/magnum-capi/ubuntu-2204-kube-${version}.qcow2; \
+   openstack image create ubuntu-2204-kube-${version} --disk-format=qcow2 --container-format=bare --property os_distro=ubuntu --file=ubuntu-2204-kube-${version}.qcow2; \
+   openstack coe cluster template create \
+      --image $(openstack image show ubuntu-2204-kube-${version} -c id -f value) \
+      --external-network public \
+      --dns-nameserver 8.8.8.8 \
+      --master-lb-enabled \
+      --master-flavor m1.medium \
+      --flavor m1.medium \
+      --network-driver calico \
+      --docker-storage-driver overlay2 \
+      --coe kubernetes \
+      --label kube_tag=${version} \
+      --floating-ip-enabled \
+      --keypair key \
+      k8s-${version};
+done;
+popd
+====
+
+git clone https://github.com/vexxhost/magnum-cluster-api
+
+New devstack for cluster-api
+======================================================
+======================================================
+
+[[local|localrc]]
+# General
+GIT_BASE=https://github.com
+# Secrets
+DATABASE_PASSWORD=root
+RABBIT_PASSWORD=secrete123
+SERVICE_PASSWORD=secrete123
+ADMIN_PASSWORD=secrete123
+
+# Keystone
+KEYSTONE_ADMIN_ENDPOINT=true
+
+# Glance
+GLANCE_LIMIT_IMAGE_SIZE_TOTAL=10000
+
+# Cinder
+VOLUME_BACKING_FILE_SIZE=50G
+
+# Nova
+LIBVIRT_TYPE=kvm
+
+# Neutron
+enable_plugin neutron https://opendev.org/openstack/neutron stable/zed
+FIXED_RANGE=10.1.0.0/20
+
+# Barbican
+enable_plugin barbican https://opendev.org/openstack/barbican stable/zed
+
+# Octavia
+enable_plugin octavia https://opendev.org/openstack/octavia stable/zed
+enable_plugin ovn-octavia-provider https://opendev.org/openstack/ovn-octavia-provider stable/zed
+enable_service octavia o-api o-cw o-hm o-hk o-da
+
+# Magnum
+enable_plugin magnum https://opendev.org/openstack/magnum stable/zed
+
+# Manila
+LIBS_FROM_GIT=python-manilaclient
+enable_plugin manila https://opendev.org/openstack/manila stable/zed
+enable_plugin manila-ui https://opendev.org/openstack/manila-ui stable/zed
+
+SHARE_DRIVER=manila.share.drivers.generic.GenericShareDriver
+MANILA_ENABLED_BACKENDS=generic
+MANILA_OPTGROUP_generic_driver_handles_share_servers=True
+MANILA_OPTGROUP_generic_connect_share_server_to_tenant_network=True
+MANILA_DEFAULT_SHARE_TYPE_EXTRA_SPECS='snapshot_support=True create_share_from_snapshot_support=True'
+MANILA_CONFIGURE_DEFAULT_TYPES=True
+
+MANILA_SERVICE_IMAGE_ENABLED=True
+MANILA_USE_SERVICE_INSTANCE_PASSWORD=True
+
+[[post-config|/etc/magnum/magnum.conf]]
+[cluster_template]
+kubernetes_allowed_network_drivers = calico
+kubernetes_default_network_driver = calico
+
+
+======================================================
+======================================================
+
+pushd /opt/stack
+git checkout stable/zed
+popd
+export TARGET_BRANCH=stable/zed
+
+
+===========
+
+Add `/home/ubuntu/.local/bin` to `/etc/environment`
+and 
+sudo systemctl restart devstack@magnum-api devstack@magnum-cond

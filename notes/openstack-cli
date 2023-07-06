@@ -1,0 +1,89 @@
+# Magnum coe cluster
+#ssh-keygen
+openstack keypair create --public-key ~/.ssh/id_rsa.pub key
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.23.13|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.23.13 --external-network public --master-lb-enabled --keypair key k8s-v1.23.13
+
+openstack coe cluster template create --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.25.3|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.25.3 --external-network public --master-lb-enabled --keypair key k8s-v1.25.3
+
+
+osec --image $(oil|grep v22.04|awk '{print $2}') --network net-workspace-rlin --flavor v3-standard-32 --key-nam key --security-group all-open devstack-2204
+osec --image $(oil|grep "Ubuntu 20.04.3"|awk '{print $2}') --network net-workspace-rlin --flavor v3-standard-32 --key-nam key --security-group all-open devstack-2004
+
+openstack server add floating ip devstack-2204 38.108.68.128
+openstack server add floating ip devstack-2004 38.108.68.28
+
+
+
+
+openstack coe cluster template create --coe kubernetes --flavor=m1.medium --master-flavor=m1.medium --dns-nameserver=8.8.8.8,1.1.1.1 --master-lb-enabled --network-driver=calico --image fedora-coreos-35.20220116.3.0-openstack.x86_64 --volume-driver=cinder --external-network=public --server-type=vm --labels "boot_volume_size=40,cloud_provider_tag=v1.18.0,container_infra_prefix=registry.public.yul1.vexxhost.net/magnum/,etcd_volume_size=20,helm_client_sha256=270acb0f085b72ec28aee894c7443739271758010323d72ced0e92cd2c96ffdb, helm_client_tag=v3.4.0,helm_client_url=https://get.helm.sh/helm-v3.4.0-linux-amd64.tar.gz,kube_tag=v1.20.7,master_lb_floating_ip_enabled=true" k8s-1.11.1
+
+
+# To verify magnum COE
+openstack keypair create --public-key ~/.ssh/id_rsa.pub key
+
+octc --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.24.7|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.24.7 --external-network public --master-lb-enabled k8s-v1.24.7
+
+octc --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.23.13|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.23.13 --external-network public --master-lb-enabled k8s-v1.23.13
+
+octc --coe kubernetes --image $(openstack image list|grep ubuntu-2004-v1.25.3|awk '{print $2}') --network-driver calico --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium --public --server-type vm --floating-ip-enabled --labels kube_tag=v1.25.3 --external-network public --master-lb-enabled k8s-v1.25.3
+
+occ --cluster-template k8s-v1.24.7 --master-count 1 --node-count 1 --keypair  test-key test1
+
+openstack coe cluster template create k8s-1.25.3 --image ubuntu-2004-v1.25.3 --keypair key --external-network public --fixed-network  private --fixed-subnet private-subnet --dns-nameserver 8.8.8.8 --flavor m1.medium --master-flavor m1.medium  --volume-driver cinder --docker-volume-size 5 --network-driver calico  --docker-storage-driver overlay2 --coe kubernetes  --labels kube_tag=v1.25.3
+
+openstack --os-username=demo --os-user-domain-name=Default --os-password=password --os-project-name=demo --os-project-domain-name=Default token issue
+
+# Nova
+openstack server create --flavor m1.medium --network private --key-name key --image cirros-0.5.2-x86_64-disk --security-group all-open s1
+openstack server create --flavor m1.medium --network admin_net --key-name key --image cirros-0.5.2-x86_64-disk --security-group all-open s1
+openstack server create --flavor m1.medium --network private --network admin_net --network manila_service_network --key-name key --image cirros-0.5.2-x86_64-disk --security-group all-open s1
+osec --flavor m1.small --image cirros --security-group all-open --key-name key1 --network private test1
+osec --flavor m1.small --image ubuntu-2004-v1.25.3 --security-group all-open --key-name key1 --network private test2
+
+openstack keypair create --public-key ~/.ssh/id_ecdsa.pub key
+openstack keypair create --public-key ~/.ssh/id_rsa.pub key
+
+# create all open security group
+openstack security group create all-open
+openstack security group rule create --proto tcp --remote-ip 0.0.0.0/0 --dst-port 1:65525 all-open
+openstack security group rule create --proto udp --remote-ip 0.0.0.0/0 --dst-port 1:65525 all-open
+openstack security group rule create --proto icmp --remote-ip 0.0.0.0/0 all-open
+
+
+
+#Manila
+
+openstack share network create --neutron-net-id private --neutron-subnet-id private-subnet --name share-net
+openstack share create --share-network d5b417e6-f07c-4c0f-9ed1-a211c392aaaa --name share1 NFS 1
+openstack share access create share6 ip 10.2.5.44
+#mount -vt nfs 10.2.5.115:/shares/share-0e484e95-0c39-4d31-8d69-a7d975adae97 ./test
+mount -vt nfs 10.254.0.23:/shares/share-64e3ba50-509b-4be9-9cb4-92c249035957 ./test
+
+--os-share-api-version 2.63
+
+o --os-share-api-version 2.63 share type create --snapshot-support true --create-share-from-snapshot-support true  --revert-to-snapshot-support true --mount-snapshot-support true --public true sharetype1 true
+
+# for nfs
+sudo apt update
+sudo apt install nfs-common
+mount -t nfs 10.254.0.13:/shares/share-448e0e2e-2b50-4304-9808-ee17d358d040 /root/dd/
+
+
+
+# Network neutron
+
+## floating ip
+openstack floating ip create --project admin --subnet public-subnet public
+openstack server add floating ip s1 172.24.4.76
+
+##netowrk qos policy
+openstack network qos policy create bw-50Mbps-FIP
+openstack network qos rule create --type bandwidth-limit --max-kbps 51200 --egress bw-50Mbps-FIP
+openstack network qos rule create --type bandwidth-limit --max-kbps 51200 --ingress bw-50Mbps-FIP
+openstack network qos policy set --share bw-50Mbps-FIP
+openstack network qos policy create bw-50Mbps-FIP
+openstack network qos rule create --type bandwidth-limit --max-kbps 10240 --egress bw-10Mbps-FIP
+openstack network qos rule create --type bandwidth-limit --max-kbps 10240 --ingress bw-10Mbps-FIP
+openstack network qos policy set --share bw-10Mbps-FIP
+#openstack network qos policy set --extra-property type=bandwidth-limit,name=max-kbps,value=40960 --extra-property bw-10Mbps-FIP
+openstack floating ip set --no-qos-policy
