@@ -7,7 +7,7 @@ git clone https://opendev.org/openstack/devstack /opt/stack/devstack
 cat > /opt/stack/devstack/local.conf << END 
 [[local|localrc]]
 
-#RECLONE=no
+RECLONE=no
 GLANCE_LIMIT_IMAGE_SIZE_TOTAL=5000
 
 DATABASE_PASSWORD=password
@@ -99,6 +99,11 @@ tunnel_types=vxlan,gre
 #network_vlan_ranges = tenant:1:1000
 
 END
+
+#cd /opt/stack
+#git clone https://github.com/openstack/magnum-ui
+#cd magnum-ui/
+#git fetch https://review.opendev.org/openstack/magnum-ui refs/changes/94/890894/3 && git checkout FETCH_HEAD
 
 cd /opt/stack/devstack
 ./stack.sh
