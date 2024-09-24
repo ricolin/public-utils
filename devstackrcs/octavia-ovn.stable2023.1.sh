@@ -2,8 +2,11 @@
 sudo mkdir -p /opt/stack
 sudo chown $USER /opt/stack
 
-git clone https://opendev.org/openstack/devstack /opt/stack/devstack
-
+git clone https://opendev.org/openstack/devstack --branch stable/2023.1 /opt/stack/devstack
+git clone https://opendev.org/openstack/ovn-octavia-provider /opt/stack/ovn-octavia-provider
+cd /opt/stack/ovn-octavia-provider
+git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/18 && git checkout FETCH_HEAD
+sed -i 's/neutron-lib.*/neutron-lib===3.4.3/g' /opt/stack/ovn-octavia-provider/requirements.txt
 cat > /opt/stack/devstack/local.conf << END 
 
 [[local|localrc]]
@@ -52,13 +55,13 @@ disable_service q-dhcp
 disable_service q-meta
 
 # Enable services, these services depend on neutron plugin.
-enable_plugin neutron https://opendev.org/openstack/neutron
+enable_plugin neutron https://opendev.org/openstack/neutron stable/2023.1
 enable_service q-trunk
 enable_service q-dns
 #enable_service q-qos
 
 # Enable octavia tempest plugin tests
-enable_plugin octavia-tempest-plugin https://opendev.org/openstack/octavia-tempest-plugin
+#enable_plugin octavia-tempest-plugin https://opendev.org/openstack/octavia-tempest-plugin
 enable_service horizon
 
 # Cinder (OpenStack Block Storage) is disabled by default to speed up
@@ -107,9 +110,9 @@ PUBLIC_NETWORK_GATEWAY="172.24.4.1"
 # Octavia configuration
 OCTAVIA_NODE="api"
 DISABLE_AMP_IMAGE_BUILD=True
-enable_plugin barbican https://opendev.org/openstack/barbican
-enable_plugin octavia https://opendev.org/openstack/octavia
-enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard
+enable_plugin barbican https://opendev.org/openstack/barbican stable/2023.1
+enable_plugin octavia https://opendev.org/openstack/octavia stable/2023.1
+enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard stable/2023.1
 LIBS_FROM_GIT+=python-octaviaclient
 enable_service octavia
 enable_service o-api
@@ -119,7 +122,7 @@ disable_service o-cw
 disable_service o-hm
 
 # OVN octavia provider plugin
-enable_plugin ovn-octavia-provider https://opendev.org/openstack/ovn-octavia-provider
+enable_plugin ovn-octavia-provider https://opendev.org/openstack/ovn-octavia-provider stable/2023.1
 
 [[post-config|$NOVA_CONF]]
 [scheduler]

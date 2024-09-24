@@ -1,4 +1,5 @@
 #cloud-config
+admin_pass: password
 password: password
 chpasswd: {expire: False}
 ssh_pwauth: True
