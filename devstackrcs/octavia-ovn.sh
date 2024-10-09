@@ -5,7 +5,7 @@ sudo chown $USER /opt/stack
 git clone https://opendev.org/openstack/devstack /opt/stack/devstack
 git clone https://opendev.org/openstack/ovn-octavia-provider /opt/stack/ovn-octavia-provider
 cd /opt/stack/ovn-octavia-provider
-git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/20 && git checkout FETCH_HEAD
+git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/23 && git checkout FETCH_HEAD
 
 cat > /opt/stack/devstack/local.conf << END 
 

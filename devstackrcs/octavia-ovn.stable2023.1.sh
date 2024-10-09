@@ -3,10 +3,13 @@ sudo mkdir -p /opt/stack
 sudo chown $USER /opt/stack
 
 git clone https://opendev.org/openstack/devstack --branch stable/2023.1 /opt/stack/devstack
-git clone https://opendev.org/openstack/ovn-octavia-provider /opt/stack/ovn-octavia-provider
-cd /opt/stack/ovn-octavia-provider
-git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/18 && git checkout FETCH_HEAD
-sed -i 's/neutron-lib.*/neutron-lib===3.4.3/g' /opt/stack/ovn-octavia-provider/requirements.txt
+#git clone https://opendev.org/openstack/ovn-octavia-provider /opt/stack/ovn-octavia-provider
+#cd /opt/stack/ovn-octavia-provider
+#git checkout stable/2023.1
+#cp /opt/stack/ovn-octavia-provider/requirements.txt /opt/stack/ovn-octavia-provider/requirements.tmp.txt
+#git checkout master
+#git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/23 && git checkout FETCH_HEAD
+#cp /opt/stack/ovn-octavia-provider/requirements.tmp.txt /opt/stack/ovn-octavia-provider/requirements.txt
 cat > /opt/stack/devstack/local.conf << END 
 
 [[local|localrc]]
