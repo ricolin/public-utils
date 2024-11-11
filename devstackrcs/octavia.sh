@@ -18,8 +18,7 @@ ADMIN_PASSWORD=password
 
 # If your stack get failed with error: "Could not determine host ip address.
 # See local.conf for suggestions on setting HOST_IP." Try to uncomment
-# this line to set the proper host IP.
-#HOST_IP="192.168.1.183"
+# this line to set the proper host IP. 
 HOST_IP=$(hostname -I| awk '{print $1}')
 
 # Horizon (the web UI) is enabled by default. You may want to disable
@@ -27,18 +26,19 @@ HOST_IP=$(hostname -I| awk '{print $1}')
 enable_service horizon
 #disable_service horizon
 
-# Cinder (OpenStack Block Storage) is disabled by default to speed up
-# DevStack a bit. You may enable it here if you would like to use it.
-enable_service cinder c-sch c-api c-vol
+#enable_plugin designate https://opendev.org/openstack/designate
+#enable_service designate,designate-central,designate-api,designate-worker,designate-producer,designate-mdns
 
-# Disable Tempest - The OpenStack Integration Test Suite.
-enable_service tempest
+LIBS_FROM_GIT+=python-octaviaclient
+# Cinder (OpenStack Block Storage) is disabled by default to speed up
+# DevStack a bit. You may enable it here if you would like to use it. 
+disable_service cinder c-sch c-api c-vol
 
 # Disable OpenStack Swift - the object/blob store service.
 disable_service swift
 
 # Disable ML2 OVN plugin, driver and services
-disable_service ovn
+disable_service ovn 
 disable_service ovn-controller
 disable_service ovn-northd
 disable_service q-ovn-metadata-agent
@@ -48,38 +48,24 @@ Q_AGENT=openvswitch
 
 # Enable Neutron services neutron-server, neutron-openvswitch-agent,
 # neutron-dhcp-agent, neutron-l3-agent and neutron-metadata-agent
+
+enable_plugin barbican https://opendev.org/openstack/barbican
 enable_plugin neutron https://opendev.org/openstack/neutron
+enable_plugin octavia https://opendev.org/openstack/octavia
+enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard
 enable_service q-svc
 enable_service q-agt
 enable_service q-dhcp
 enable_service q-l3
 enable_service q-meta
+# Octavia
+enable_service octavia
+enable_service o-cw
+enable_service o-hm
+enable_service o-hk
+enable_service o-api
+enable_service o-da
 
-enable_plugin barbican https://git.openstack.org/openstack/barbican
-enable_service rabbit mysql key
-#enable_plugin heat https://git.openstack.org/openstack/heat
-#enable_plugin magnum https://git.openstack.org/openstack/magnum
-VOLUME_BACKING_FILE_SIZE=200G
-# Enable manila
-#enable_plugin manila https://opendev.org/openstack/manila
-
-#allow branches
-#NOVA_REPO=https://review.opendev.org/openstack/nova
-#NOVA_BRANCH=refs/changes/50/5050/1
-#CINDER_REPO=https://review.opendev.org/openstack/cinder
-#CINDER_BRANCH=refs/changes/37/913437/2
-#git fetch https://review.opendev.org/openstack/cinder refs/changes/37/913437/2 && git checkout FETCH_HEAD
-# Ceph
-enable_plugin devstack-plugin-ceph https://opendev.org/openstack/devstack-plugin-ceph
-ENABLE_CEPH_CINDER=True     # ceph backend for cinder
-ENABLE_CEPH_GLANCE=True     # store images in ceph
-ENABLE_CEPH_C_BAK=True      # backup volumes to ceph
-ENABLE_CEPH_NOVA=True       # allow nova to use ceph resources
-#ENABLE_CEPH_MANILA=True
-#MANILA_CEPH_DRIVER=cephfsnfs
-
-#MANILA_CEPH_GANESHA_RADOS_STORE=True
-#MANILA_DHSS=True
 
 [[post-config|/etc/neutron/neutron.conf]]
 [DEFAULT]
@@ -103,14 +89,14 @@ mechanism_drivers=openvswitch,l2population
 tunnel_types=vxlan,gre
 
 # You can add more config options here for ml2_conf.ini, for instance
-# you can uncomment the followings to set the segment ID ranges for
+# you can uncomment the followings to set the segment ID ranges for 
 # various tenant network types.
 
 #[ml2_type_vxlan]
 #vni_ranges=1:10000
 
 #[ml2_type_flat]
-#flat_networks = *
+#flat_networks = * 
 
 #[ml2_type_gre]
 #tunnel_id_ranges = 1:10000
