@@ -2,10 +2,10 @@
 sudo mkdir -p /opt/stack
 sudo chown $USER /opt/stack
 
-git clone https://opendev.org/openstack/devstack --branch stable/2023.1 /opt/stack/devstack
+git clone https://opendev.org/openstack/devstack --branch unmaintained/2023.1 /opt/stack/devstack
 #git clone https://opendev.org/openstack/ovn-octavia-provider /opt/stack/ovn-octavia-provider
 #cd /opt/stack/ovn-octavia-provider
-#git checkout stable/2023.1
+#git checkout unmaintained/2023.1
 #cp /opt/stack/ovn-octavia-provider/requirements.txt /opt/stack/ovn-octavia-provider/requirements.tmp.txt
 #git checkout master
 #git fetch https://review.opendev.org/openstack/ovn-octavia-provider refs/changes/47/925747/23 && git checkout FETCH_HEAD
@@ -58,7 +58,7 @@ disable_service q-dhcp
 disable_service q-meta
 
 # Enable services, these services depend on neutron plugin.
-enable_plugin neutron https://opendev.org/openstack/neutron stable/2023.1
+enable_plugin neutron https://opendev.org/openstack/neutron unmaintained/2023.1
 enable_service q-trunk
 enable_service q-dns
 #enable_service q-qos
@@ -113,9 +113,9 @@ PUBLIC_NETWORK_GATEWAY="172.24.4.1"
 # Octavia configuration
 OCTAVIA_NODE="api"
 DISABLE_AMP_IMAGE_BUILD=True
-enable_plugin barbican https://opendev.org/openstack/barbican stable/2023.1
-enable_plugin octavia https://opendev.org/openstack/octavia stable/2023.1
-enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard stable/2023.1
+enable_plugin barbican https://opendev.org/openstack/barbican unmaintained/2023.1
+enable_plugin octavia https://opendev.org/openstack/octavia unmaintained/2023.1
+enable_plugin octavia-dashboard https://opendev.org/openstack/octavia-dashboard unmaintained/2023.1
 LIBS_FROM_GIT+=python-octaviaclient
 enable_service octavia
 enable_service o-api
@@ -125,7 +125,7 @@ disable_service o-cw
 disable_service o-hm
 
 # OVN octavia provider plugin
-enable_plugin ovn-octavia-provider https://opendev.org/openstack/ovn-octavia-provider stable/2023.1
+enable_plugin ovn-octavia-provider https://opendev.org/openstack/ovn-octavia-provider unmaintained/2023.1
 
 [[post-config|$NOVA_CONF]]
 [scheduler]

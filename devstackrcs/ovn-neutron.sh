@@ -7,12 +7,12 @@ git clone https://opendev.org/openstack/devstack /opt/stack/devstack
 cat > /opt/stack/devstack/local.conf << END 
 [[local|localrc]]
 
+MYSQL_GATHER_PERFORMANCE=False
 DATABASE_PASSWORD=password
 RABBIT_PASSWORD=password
 SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 ADMIN_PASSWORD=password
-
 Q_AGENT=ovn
 Q_ML2_PLUGIN_MECHANISM_DRIVERS=ovn,logger
 Q_ML2_PLUGIN_TYPE_DRIVERS=local,flat,vlan,geneve

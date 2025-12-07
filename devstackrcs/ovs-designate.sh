@@ -26,8 +26,8 @@ HOST_IP=$(hostname -I| awk '{print $1}')
 enable_service horizon
 #disable_service horizon
 
-#enable_plugin designate https://opendev.org/openstack/designate
-#enable_service designate,designate-central,designate-api,designate-worker,designate-producer,designate-mdns
+enable_plugin designate https://opendev.org/openstack/designate
+enable_service designate,designate-central,designate-api,designate-worker,designate-producer,designate-mdns
 
 # Cinder (OpenStack Block Storage) is disabled by default to speed up
 # DevStack a bit. You may enable it here if you would like to use it. 
