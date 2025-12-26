@@ -1,13 +1,15 @@
-
 #!/bin/bash
 sudo mkdir -p /opt/stack
 sudo chown $USER /opt/stack
 
 git clone https://opendev.org/openstack/devstack /opt/stack/devstack
+git clone https://opendev.org/openstack/ironic /opt/stack/ironic
+sed -i 's/sudo dpkg -r dnsmasq dnsmasq-base/sudo dpkg -r dnsmasq/g' /opt/stack/ironic/devstack/lib/ironic
 
 cat > /opt/stack/devstack/local.conf << END 
 [[local|localrc]]
 
+RECLONE=no
 MYSQL_GATHER_PERFORMANCE=False
 DATABASE_PASSWORD=password
 RABBIT_PASSWORD=password
@@ -15,9 +17,11 @@ SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 ADMIN_PASSWORD=password
 Q_AGENT=ovn
-Q_ML2_PLUGIN_MECHANISM_DRIVERS=ovn,logger
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=ovn
 Q_ML2_PLUGIN_TYPE_DRIVERS=local,flat,vlan,geneve
-Q_ML2_TENANT_NETWORK_TYPE="geneve"
+Q_ML2_TENANT_NETWORK_TYPE="vlan"
+#Q_ML2_TENANT_NETWORK_TYPE="vxlan"
+ML2_L3_PLUGIN="ovn-router,trunk"
 
 # Enable devstack spawn logging
 LOGFILE=$DEST/logs/stack.sh.log
@@ -25,6 +29,8 @@ LOGFILE=$DEST/logs/stack.sh.log
 enable_service ovn-northd
 enable_service ovn-controller
 enable_service q-ovn-metadata-agent
+enable_service ovn-vswitchd
+enable_service atop
 
 # Use Neutron
 enable_service q-svc
@@ -164,8 +170,7 @@ ENABLE_CHASSIS_AS_GW=True
 # The next line is used to insert extra configuration here from the vagrant
 # script, please don't modify or remove, keep it before any post-config items
 #EXTRA_CONFIG
-#
-#
+
 # =========================================================================
 # IRONIC stuff
 # =========================================================================
@@ -188,7 +193,6 @@ enable_service s-proxy s-object s-container s-account
 
 Q_USE_SECGROUP="False"
 SWIFT_ENABLE_TEMPURLS=True
-IRONIC_DEPLOY_DRIVER=ipmi
 IRONIC_VM_COUNT=3
 IRONIC_BAREMETAL_BASIC_OPS=True
 DEFAULT_INSTANCE_TYPE=baremetal
@@ -205,33 +209,35 @@ IRONIC_BUILD_DEPLOY_RAMDISK=False
 VIRT_DRIVER=ironic
 IRONIC_VM_LOG_DIR=$HOME/ironic-bm-logs
 
+
+# =======================================
+# extra ironic
+# =======================================
+IRONIC_DEPLOY_DRIVER=redfish
+IRONIC_ENABLED_HARDWARE_TYPES=redfish
+IRONIC_ENABLED_POWER_INTERFACES=redfish
+IRONIC_ENABLED_MANAGEMENT_INTERFACES=redfish
+IRONIC_AUTOMATED_CLEAN_ENABLED=False
+IRONIC_ENABLED_BOOT_INTERFACES=redfish-https
+# Ironic has to master a new image, and this CAN take longer as a
+# result and makes this job VERY sensitive to heavy disk IO of the
+# underlying hypervisor/cloud.
+IRONIC_CALLBACK_TIMEOUT=800
+
 # =========================================================================
 # End of IRONIC stuff
 # =========================================================================
-
-# =========================================================================
-# IRONIC extera stuff
-# =========================================================================
-
-IRONIC_PROVISION_PROVIDER_NETWORK_TYPE=flat
-IRONIC_PROVISION_NETWORK_NAME=baremetal
-NEUTRON_PHYSICAL_NETWORK=ironic
-IRONIC_PROVISION_SUBNET_PREFIX=172.24.6.0/24
-IRONIC_PROVISION_ALLOCATION_POOL=start=172.24.6.10,end=172.24.6.30
-IRONIC_PROVISION_SUBNET_GATEWAY=172.24.6.1
-OVN_BRIDGE_MAPPINGS=public:br-ex,ironic:brbm
-
-# =========================================================================
-# End of IRONIC extera stuff
-# =========================================================================
-
 
 [[post-config|$NOVA_CONF]]
 [scheduler]
 discover_hosts_in_cells_interval = 2
 
+# Designate
+#enable_plugin designate https://opendev.org/openstack/designate
+#enable_service designate,designate-central,designate-api,designate-worker,designate-producer,designate-mdns
+
 
 END
 
 cd /opt/stack/devstack
-./stack.sh
+./stack.sh > build.log

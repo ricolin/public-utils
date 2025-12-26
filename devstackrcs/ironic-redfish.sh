@@ -68,7 +68,6 @@ SWIFT_ENABLE_TEMPURLS=True
 # you can do so by setting IRONIC_DEPLOY_DRIVER to the name of the driver
 # you wish used by default, and ensuring that driver (along with others) is
 # enabled.
-IRONIC_DEPLOY_DRIVER=ipmi
 
 # Example: Uncommenting these will configure redfish by default
 #IRONIC_ENABLED_HARDWARE_TYPES=redfish,ipmi,fake-hardware
@@ -109,6 +108,23 @@ VIRT_DRIVER=ironic
 LOGFILE=$HOME/devstack.log
 LOGDIR=$HOME/logs
 IRONIC_VM_LOG_DIR=$HOME/ironic-bm-logs
+# =======================================
+# extra ironic
+# =======================================
+IRONIC_DEPLOY_DRIVER=redfish
+IRONIC_ENABLED_HARDWARE_TYPES=redfish
+IRONIC_ENABLED_POWER_INTERFACES=redfish
+IRONIC_ENABLED_MANAGEMENT_INTERFACES=redfish
+IRONIC_AUTOMATED_CLEAN_ENABLED=False
+IRONIC_ENABLED_BOOT_INTERFACES=redfish-https
+# Ironic has to master a new image, and this CAN take longer as a
+# result and makes this job VERY sensitive to heavy disk IO of the
+# underlying hypervisor/cloud.
+IRONIC_CALLBACK_TIMEOUT=800
+
+# =========================================================================
+# End of IRONIC stuff
+# =========================================================================
 
 END
 
