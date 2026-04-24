@@ -70,6 +70,7 @@ verbose = True
 [ml2]
 type_drivers=flat,gre,vlan,vxlan
 tenant_network_types=vxlan
+project_network_types=vxlan
 mechanism_drivers=openvswitch,l2population
 
 [agent]

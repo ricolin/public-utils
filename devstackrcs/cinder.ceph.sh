@@ -43,8 +43,13 @@ disable_service ovn-controller
 disable_service ovn-northd
 disable_service q-ovn-metadata-agent
 
-# Use openvswitch as the ml2 plugin driver
+# Use openvswitch as the ml2 plugin driver (override modern DevStack's OVN defaults)
 Q_AGENT=openvswitch
+NEUTRON_AGENT=openvswitch
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch,l2population
+Q_ML2_PLUGIN_TYPE_DRIVERS=flat,gre,vlan,vxlan
+Q_ML2_TENANT_NETWORK_TYPE=vxlan
+Q_ML2_PLUGIN_EXT_DRIVERS=port_security
 
 # Enable Neutron services neutron-server, neutron-openvswitch-agent,
 # neutron-dhcp-agent, neutron-l3-agent and neutron-metadata-agent
@@ -97,7 +102,9 @@ verbose = True
 [ml2]
 type_drivers=flat,gre,vlan,vxlan
 tenant_network_types=vxlan
+project_network_types=vxlan
 mechanism_drivers=openvswitch,l2population
+extension_drivers=port_security
 
 [agent]
 tunnel_types=vxlan,gre
