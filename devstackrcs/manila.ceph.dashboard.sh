@@ -1,4 +1,5 @@
 #!/bin/bash 
+export FORCE=yes
 
 # DON"T CHANGE THIS
 sudo mkdir -p /opt/stack

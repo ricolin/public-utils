@@ -1,4 +1,5 @@
 #!/bin/bash
+export FORCE=yes
 sudo mkdir -p /opt/stack
 sudo chown $USER /opt/stack
 
